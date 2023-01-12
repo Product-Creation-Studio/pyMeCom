@@ -11,7 +11,7 @@ from serial import Serial
 from PyCRC.CRCCCITT import CRCCCITT
 
 # from this package
-from .exceptions import ResponseException, WrongResponseSequence, WrongChecksum, ResponseTimeout, UnknownParameter
+from .exceptions import ResponseException, WrongResponseSequence, WrongChecksum, ResponseTimeout, UnknownParameter, UnknownMeComType
 from .commands import TEC_PARAMETERS, LDD_PARAMETERS, ERRORS
 
 import mecom
@@ -482,21 +482,24 @@ class DeviceError(MeFrame):
 class MeCom:
     """
     Main class. Import this one:
-    from qao.devices.mecom import MeCom
+    from mecom import MeCom
 
     For a usage example see __main__
     """
     SEQUENCE_COUNTER = 1
 
-    def __init__(self, serialport="/dev/ttyUSB0", timeout=1, baudrate=57600,metype = 'TEC'):
+    def __init__(self, serialport: str|Serial ="/dev/ttyUSB0", timeout=1, baudrate=57600, metype='TEC', address=0):
         """
         Initialize communication with serial port.
-        :param serialport: str
+        :param serialport: str port name (or opened Serial instance)
         :param timeout: int
         :param metype: str: either 'TEC' or 'LDD'
         """
         # initialize serial connection
-        self.ser = Serial(port=serialport, timeout=timeout, write_timeout=timeout, baudrate=baudrate)
+        if type(serialport) is str:
+            self.ser = Serial(port=serialport, timeout=timeout, write_timeout=timeout, baudrate=baudrate)
+        else:
+            self.ser = serialport
 
         # start protocol thread
         # self.protocol = ReaderThread(serial_instance=self.ser, protocol_factory=MePacket)
@@ -504,6 +507,7 @@ class MeCom:
 
         # initialize parameters
         self.PARAMETERS = ParameterList(metype)
+        self.ADDRESS = address
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.ser.__exit__(exc_type, exc_val, exc_tb)

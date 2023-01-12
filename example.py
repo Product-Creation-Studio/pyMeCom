@@ -36,20 +36,21 @@ class MeerstetterTEC(object):
     def _tearDown(self):
         self.session().stop()
 
-    def __init__(self, port="/dev/ttyUSB0", channel=1, queries=DEFAULT_QUERIES, *args, **kwars):
+    def __init__(self, port="/dev/ttyUSB0", channel=1, queries=DEFAULT_QUERIES, address=0, *args, **kwars):
         assert channel in (1, 2)
         self.channel = channel
         self.port = port
         self.queries = queries
         self._session = None
+        self.address = address
         self._connect()
 
     def _connect(self):
         # open session
         self._session = MeCom(serialport=self.port)
-        # get device address
-        self.address = self._session.identify()
-        logging.info("connected to {}".format(self.address))
+        if self.address == 0:
+            self.address = self._session.identify()
+        logging.info(f"connected to {self.address}")
 
     def session(self):
         if self._session is None:
