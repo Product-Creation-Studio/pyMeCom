@@ -9,3 +9,10 @@ mecom.py contains the communication logic
 
 from .mecom import MeCom, VR, VS, Parameter
 from .exceptions import ResponseException, WrongChecksum
+
+global MECOM_DEBUG
+MECOM_DEBUG = False
+
+def debug(b):
+    global MECOM_DEBUG
+    MECOM_DEBUG = b

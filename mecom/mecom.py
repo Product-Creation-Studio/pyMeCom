@@ -14,6 +14,7 @@ from PyCRC.CRCCCITT import CRCCCITT
 from .exceptions import ResponseException, WrongResponseSequence, WrongChecksum, ResponseTimeout, UnknownParameter
 from .commands import TEC_PARAMETERS, LDD_PARAMETERS, ERRORS
 
+import mecom
 
 class Parameter(object):
     """"
@@ -557,8 +558,11 @@ class MeCom:
         self.ser.reset_input_buffer()
 
         # send query
-        self.ser.write(query.compose())
-        # print(query.compose())
+        cmd = query.compose()
+        self.ser.write(cmd)
+
+        if mecom.MECOM_DEBUG:
+            print(cmd)
 
         # flush write cache
         self.ser.flush()
@@ -572,6 +576,8 @@ class MeCom:
         while response_byte != cr:
             response_frame += response_byte
             response_byte = self._read(size=1)
+        if mecom.MECOM_DEBUG:
+            print(response_frame)
 
         # strip source byte (! or #, but for a response always !)
         response_frame = response_frame[1:]
